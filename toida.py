@@ -1,6 +1,6 @@
 from idautils import *
 from idc import *
-from biodata_4_decrypt import decrypt
+from biodata_4a_decrypt import decrypt
 
 
 def key_encrypted_address(h):
@@ -25,9 +25,8 @@ def key_encrypted_address(h):
             size = int.from_bytes(get_bytes(operand - 4, 4),
                                   "little")  # see _string class from Delphi
             # This is equivalent to get_wide_dword(operand-4)
-            encrypted_string = get_bytes(operand,
-                                         size)  # This is equivalent to
-            get_strlit_contents(operand, size)
+            encrypted_string = get_bytes(operand, size)
+            #this is equivalent to get_strlit_contents(operand, size)
         elif t == o_void:
             operand = 'n/a'
     return encrypted_string
@@ -43,6 +42,11 @@ def get_enc_and_key(ea):
     for xref in XrefsTo(ea):
         # From Kaspersky class: teaches how to take each instruction and extract the mnemonic and the operands
         # between the 2 address.
+        # Note: i have used 5 bytes before the address
+        # in which it calls the function that we wants, however,
+        # we should use a larger number because there is not guarantee
+        #  that the compiler will always put mov eax,<encrypted string>
+        # before the function call.
         for h in Heads(xref.frm - 5, xref.frm):
             mnemonic = print_insn_mnem(h)
             operand_1 = print_operand(h, 0)
