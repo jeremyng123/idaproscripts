@@ -5,9 +5,7 @@ import os
 import pefile
 import re
 
-# def rc4_decrypt(key, data):
-#     cipher = ARC4(key)
-#     return cipher.decrypt(data)
+PROCESSOR_IS_64 = False
 
 _20bytes_key = "[a-zA-Z0-9]{20}"
 # config_plus_key = ".{750,}" + _20bytes_key
@@ -24,26 +22,16 @@ def retrieve_config(file):
     search_get_size(file, _20bytes_key)
 
 
-# def arc4_extract_config_from_file(file):
-#     rc4_decrypt = lambda key, data: ARC4(key).decrypt(data)
-#     offset = retrieve_config(file)
-#     key = file[offset:]
-#     print(key)
-#     # data = config[8:size]
-
-#     return (" | ".join(
-#         block
-#         for block in rc4_decrypt(key, data).decode('latin-1').split("\x00")
-#         if block != ''))
-
-
 def arc4_decrypt_config(config):
     rc4_decrypt = lambda key, data: ARC4(key.encode("latin-1")).decrypt(
         data.encode("latin-1"))
     size = search_get_size(config, _20bytes_key)
     print(size)
     key = config[size:].split('\0')[0]
-    data = config[4:size]
+    data = config[
+        4 +
+        4 * PROCESSOR_IS_64:  # The first 4 bytes is a pointer to an address
+        size]
     # print(data)
 
     return (" | ".join(
@@ -54,7 +42,6 @@ def arc4_decrypt_config(config):
 
 def config_extract(filename):
     pe = pefile.PE(filename)
-    # pe.sections == list
     for section in pe.sections:
         # print(section.Name.decode('utf-8'))
         if (".data" in section.Name.decode('utf-8').strip()):
