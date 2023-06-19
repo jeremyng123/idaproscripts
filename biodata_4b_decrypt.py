@@ -1,6 +1,8 @@
 from idc import *
 from idautils import *
 
+ida_xref,add_cref
+
 
 def retrieveStringReplacementTable(start, end):
     replace = {}
